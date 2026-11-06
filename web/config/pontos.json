@@ -1,0 +1,12 @@
+[
+  {
+    "id": "esp32-01",
+    "nome": "Ponto 01",
+    "bairro": null,
+    "lat": null,
+    "lon": null,
+    "referencia": false,
+    "cobertura_arborea_pct": null,
+    "renda_media_sm": null
+  }
+]

@@ -1,0 +1,14 @@
+[
+  { "id": "demo-barigui",   "nome": "Parque Barigui",    "bairro": "Santo Inácio",      "lat": -25.4215, "lon": -49.3075, "referencia": true,  "cobertura_arborea_pct": 58, "renda_media_sm": 6.8 },
+  { "id": "demo-centro",    "nome": "Praça Tiradentes",  "bairro": "Centro",            "lat": -25.4296, "lon": -49.2713, "referencia": false, "cobertura_arborea_pct": 9,  "renda_media_sm": 5.1 },
+  { "id": "demo-batel",     "nome": "Batel",             "bairro": "Batel",             "lat": -25.4420, "lon": -49.2870, "referencia": false, "cobertura_arborea_pct": 24, "renda_media_sm": 11.4 },
+  { "id": "demo-bigorrilho","nome": "Bigorrilho",        "bairro": "Bigorrilho",        "lat": -25.4330, "lon": -49.2975, "referencia": false, "cobertura_arborea_pct": 27, "renda_media_sm": 10.2 },
+  { "id": "demo-felicidade","nome": "Santa Felicidade",  "bairro": "Santa Felicidade",  "lat": -25.4060, "lon": -49.3350, "referencia": false, "cobertura_arborea_pct": 41, "renda_media_sm": 6.1 },
+  { "id": "demo-boqueirao", "nome": "Boqueirão",         "bairro": "Boqueirão",         "lat": -25.5060, "lon": -49.2420, "referencia": false, "cobertura_arborea_pct": 16, "renda_media_sm": 3.2 },
+  { "id": "demo-cajuru",    "nome": "Cajuru",            "bairro": "Cajuru",            "lat": -25.4620, "lon": -49.2100, "referencia": false, "cobertura_arborea_pct": 19, "renda_media_sm": 2.9 },
+  { "id": "demo-bairroalto","nome": "Bairro Alto",       "bairro": "Bairro Alto",       "lat": -25.4130, "lon": -49.2030, "referencia": false, "cobertura_arborea_pct": 26, "renda_media_sm": 3.6 },
+  { "id": "demo-cic",       "nome": "Cidade Industrial", "bairro": "CIC",               "lat": -25.4900, "lon": -49.3380, "referencia": false, "cobertura_arborea_pct": 14, "renda_media_sm": 2.4 },
+  { "id": "demo-sitio",     "nome": "Sítio Cercado",     "bairro": "Sítio Cercado",     "lat": -25.5400, "lon": -49.2700, "referencia": false, "cobertura_arborea_pct": 11, "renda_media_sm": 2.1 },
+  { "id": "demo-tatuquara", "nome": "Tatuquara",         "bairro": "Tatuquara",         "lat": -25.5640, "lon": -49.3300, "referencia": false, "cobertura_arborea_pct": 13, "renda_media_sm": 1.8 },
+  { "id": "demo-caximba",   "nome": "Caximba",           "bairro": "Caximba",           "lat": -25.6190, "lon": -49.3390, "referencia": false, "cobertura_arborea_pct": 33, "renda_media_sm": 1.6 }
+]

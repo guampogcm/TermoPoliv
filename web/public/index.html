@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TermoPoliv · Painel</title>
+  <meta name="description" content="Temperatura e umidade em Curitiba para investigar ilhas de calor, arborização e segregação socioespacial.">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="estilo.css">
+  <script>
+    try { const t = localStorage.getItem('termopoliv-tema'); if (t) document.documentElement.dataset.theme = t; } catch {}
+  </script>
+</head>
+<body class="carregando">
+  <header class="topo">
+    <a class="marca" href="#agora" aria-label="TermoPoliv, início">
+      <img src="logo.svg" alt="" width="30" height="30">
+      <span>TermoPoliv</span>
+    </a>
+    <nav class="navegacao" aria-label="Seções">
+      <a href="#agora">Agora</a>
+      <a href="#tempo">Ao longo do tempo</a>
+      <a href="#desigualdade">Desigualdade</a>
+      <a href="#pontos">Pontos</a>
+      <a href="#metodo">Método</a>
+    </nav>
+    <div class="topo-direita">
+      <span id="status" class="status" role="status"><i aria-hidden="true"></i><span>Conectando</span></span>
+      <button id="tema" class="botao-icone" type="button" aria-label="Alternar tema claro e escuro">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <aside id="aviso-demo" class="aviso-demo" hidden>
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3 2 20h20L12 3Zm0 6v5m0 3v.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <p><strong>Modo demonstração.</strong> Leituras, cobertura arbórea e renda são fictícias, e a relação entre elas foi programada na simulação. Estes números não dizem nada sobre Curitiba.</p>
+  </aside>
+
+  <main>
+    <section id="vazio" class="vazio" hidden>
+      <p class="sobretitulo">Tudo pronto</p>
+      <h1>Aguardando a primeira leitura do ESP32</h1>
+      <p>O painel se preenche sozinho assim que um sensor enviar dados. Para testar sem o hardware, rode este comando em outro terminal:</p>
+      <pre><code id="vazio-comando"></code></pre>
+    </section>
+
+    <section id="agora" class="heroi">
+      <div class="heroi-texto">
+        <p class="missao">Temperatura e umidade medidas na rua para investigar <strong>ilhas de calor</strong>, <strong>arborização</strong> e <strong>segregação socioespacial</strong> em Curitiba.</p>
+        <div class="heroi-numero">
+          <h1 id="heroi-rotulo" class="sobretitulo">Intensidade da ilha de calor agora</h1>
+          <p id="heroi-valor" class="numero-grande">–</p>
+          <p id="heroi-frase" class="heroi-frase"></p>
+        </div>
+        <dl id="indicadores" class="indicadores">
+          <div class="indicador"><dt>Temperatura média</dt><dd id="kpi-temp">–</dd><p id="kpi-temp-nota" class="nota"></p><svg id="spark-temp" class="spark" aria-hidden="true"></svg></div>
+          <div class="indicador"><dt>Umidade média</dt><dd id="kpi-umid">–</dd><p id="kpi-umid-nota" class="nota"></p><svg id="spark-umid" class="spark" aria-hidden="true"></svg></div>
+          <div class="indicador"><dt>Maior sensação térmica</dt><dd id="kpi-sens">–</dd><p id="kpi-sens-nota" class="nota"></p></div>
+          <div class="indicador"><dt>Sensores no ar</dt><dd id="kpi-online">–</dd><p id="kpi-online-nota" class="nota"></p></div>
+        </dl>
+      </div>
+      <figure class="cartao cartao-mapa">
+        <div id="mapa" class="mapa" role="application" aria-label="Mapa de Curitiba com os pontos de medição. Os mesmos valores estão na tabela de pontos."></div>
+        <p id="mapa-aviso" class="mapa-aviso" hidden></p>
+        <figcaption class="mapa-legenda">
+          <div>
+            <p class="legenda-titulo">Diferença para o ponto de referência</p>
+            <div class="escala" data-escala></div>
+          </div>
+          <p class="nota">Entre os sensores, a cor é uma estimativa (interpolação IDW). Ela some longe de qualquer sensor.</p>
+        </figcaption>
+      </figure>
+    </section>
+
+    <form id="filtros" class="filtros" aria-label="Filtros do painel">
+      <fieldset class="segmentos">
+        <legend>Período</legend>
+        <label><input type="radio" name="periodo" value="24h" checked><span>24 horas</span></label>
+        <label><input type="radio" name="periodo" value="7d"><span>7 dias</span></label>
+        <label><input type="radio" name="periodo" value="30d"><span>30 dias</span></label>
+      </fieldset>
+      <label class="campo">
+        <span>Destacar ponto</span>
+        <select id="seletor-ponto"><option value="">Nenhum</option></select>
+      </label>
+      <a id="exportar" class="botao" href="/api/leituras.csv?periodo=24h" download>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Baixar CSV
+      </a>
+    </form>
+
+    <div id="conteudo" class="conteudo">
+      <section id="tempo" class="secao">
+        <header class="secao-topo">
+          <h2>Quando o calor aparece</h2>
+          <p>A temperatura sobe e desce em todo lugar. O que denuncia uma ilha de calor é a distância entre as linhas, principalmente à noite, quando o concreto devolve o calor guardado durante o dia.</p>
+        </header>
+        <div id="legenda-linhas" class="legenda"></div>
+        <div class="grade-2">
+          <figure class="cartao">
+            <figcaption class="cartao-titulo">Temperatura (°C)</figcaption>
+            <div id="grafico-temp" class="grafico"></div>
+          </figure>
+          <figure class="cartao">
+            <figcaption class="cartao-titulo">Umidade relativa (%)</figcaption>
+            <div id="grafico-umid" class="grafico"></div>
+          </figure>
+        </div>
+        <figure class="cartao">
+          <figcaption class="cartao-titulo">
+            Diferença para a referência por hora do dia (°C)
+            <span class="nota">Do ponto mais quente para o mais frio no período. Célula vazia: sem leitura.</span>
+          </figcaption>
+          <div id="grafico-horas" class="grafico"></div>
+          <div class="escala" data-escala></div>
+          <details class="detalhes">
+            <summary>Ver como tabela</summary>
+            <div class="rolagem"><table id="tabela-horas" class="tabela tabela-densa"></table></div>
+          </details>
+        </figure>
+      </section>
+
+      <section id="desigualdade" class="secao">
+        <header class="secao-topo">
+          <h2>Quem sente mais calor?</h2>
+          <p>O calor urbano não se distribui por acaso. Aqui cada ponto cruza a temperatura medida com a cobertura de árvores e a renda do entorno.</p>
+        </header>
+        <p id="desigualdade-aviso" class="aviso-inline" hidden></p>
+        <div id="desigualdade-corpo">
+          <div id="diferencas" class="diferencas"></div>
+          <div class="grade-2">
+            <figure class="cartao">
+              <figcaption class="cartao-titulo">Árvores e calor <span id="ajuste-arvores" class="nota"></span></figcaption>
+              <div id="grafico-arvores" class="grafico"></div>
+            </figure>
+            <figure class="cartao">
+              <figcaption class="cartao-titulo">Renda e calor <span id="ajuste-renda" class="nota"></span></figcaption>
+              <div id="grafico-renda" class="grafico"></div>
+            </figure>
+          </div>
+          <p class="nota nota-larga">Correlação não prova causa. Com poucos pontos, um único sensor mal posicionado pode mudar o resultado.</p>
+        </div>
+      </section>
+
+      <section id="pontos" class="secao">
+        <header class="secao-topo">
+          <h2>Pontos de medição</h2>
+          <p>Todos os valores do painel, ponto a ponto. Clique em um ponto para destacá-lo nos gráficos e no mapa.</p>
+        </header>
+        <div class="cartao cartao-tabela">
+          <div class="rolagem"><table id="tabela-pontos" class="tabela"></table></div>
+        </div>
+      </section>
+
+      <section id="metodo" class="secao">
+        <header class="secao-topo">
+          <h2>Como ler estes dados</h2>
+        </header>
+        <div class="lentes">
+          <article>
+            <h3>Ilhas de calor</h3>
+            <p>Regiões muito construídas ficam mais quentes do que áreas vegetadas próximas. Medimos isso como a diferença entre cada ponto e um <strong>ponto de referência</strong>, instalado em área verde.</p>
+          </article>
+          <article>
+            <h3>Arborização</h3>
+            <p>A sombra e a evapotranspiração das árvores resfriam o entorno. Cada ponto guarda a porcentagem de cobertura arbórea ao redor do sensor, obtida de bases como IPPUC e MapBiomas.</p>
+          </article>
+          <article>
+            <h3>Segregação socioespacial</h3>
+            <p>Comparar calor e renda mostra se a parte mais pobre da cidade também é a mais exposta. A renda de cada ponto vem do Censo do IBGE, por bairro ou setor censitário.</p>
+          </article>
+        </div>
+        <div class="grade-2 metodo-detalhes">
+          <div class="cartao texto">
+            <h3>Cuidados com as medidas</h3>
+            <ul>
+              <li>O DHT22 tem precisão de cerca de ±0,5 °C. Diferenças menores que 1 °C entre dois pontos estão dentro da margem de erro.</li>
+              <li>Sensor exposto ao sol direto mede o próprio aquecimento. Use um abrigo ventilado, à sombra, na mesma altura em todos os pontos.</li>
+              <li>A sensação térmica segue o índice de calor da NOAA, que foi feito para clima quente. Em dias frios ela fica próxima da temperatura do ar.</li>
+              <li>Um sensor conta como "no ar" se enviou dados nos últimos 15 minutos.</li>
+            </ul>
+          </div>
+          <div class="cartao texto">
+            <h3>O que o ESP32 envia</h3>
+            <p><code>POST /api/leituras</code> com este JSON:</p>
+            <pre><code>{
+  "sensor_id": "esp32-01",
+  "temperatura": 27.4,
+  "umidade": 61.2
+}</code></pre>
+            <p class="nota">Campos opcionais: <code>lat</code>, <code>lon</code> e <code>timestamp</code> (Unix, em segundos). Sem horário, vale a hora do servidor.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="rodape">
+    <p>TermoPoliv · Projeto de Ciberfísica. Limite municipal: IBGE. Mapa: Esri, © OpenStreetMap.</p>
+  </footer>
+
+  <div id="dica" class="dica" hidden></div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
