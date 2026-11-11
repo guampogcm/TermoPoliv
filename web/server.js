@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { Armazem, validarLeitura } from './lib/leituras.js';
 import { montarPainel, PERIODOS } from './lib/metricas.js';
 import { criarSimulador } from './lib/demo.js';
+import { iniciarDescoberta, PORTA_DESCOBERTA } from './lib/descoberta.js';
 
 const RAIZ = path.dirname(fileURLToPath(import.meta.url));
 const PUBLICO = path.join(RAIZ, 'public');
@@ -170,6 +171,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   });
   servidor.listen(porta, '0.0.0.0', () => {
     console.log(`TermoPoliv (${modo}) em http://localhost:${porta}`);
-    if (modo === 'real') console.log(`ESP32: POST http://<ip-deste-computador>:${porta}/api/leituras`);
+    if (modo === 'real') {
+      console.log(`ESP32: POST http://<ip-deste-computador>:${porta}/api/leituras`);
+      // Só no modo real: o demo recusa leituras, então não deve atrair o ESP32.
+      iniciarDescoberta({ portaHttp: porta }).pronto
+        .then(() => console.log(`Descoberta automática do ESP32 ativa (UDP ${PORTA_DESCOBERTA}).`));
+    }
   });
 }

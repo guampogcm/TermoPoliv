@@ -97,3 +97,21 @@ test('arquivos fora de public não são servidos', async () => {
     }
   });
 });
+
+test('servidor responde à descoberta do ESP32 com a porta HTTP', async () => {
+  const dgram = await import('node:dgram');
+  const { iniciarDescoberta } = await import('../lib/descoberta.js');
+  const { socket: servidor, pronto } = iniciarDescoberta({ portaHttp: 8080, porta: 0, endereco: '127.0.0.1' });
+  await pronto;
+  const cliente = dgram.createSocket('udp4');
+  try {
+    const resposta = new Promise((resolve) => cliente.once('message', (m, r) => resolve({ texto: m.toString(), r })));
+    cliente.send('TERMOPOLIV?', servidor.address().port, '127.0.0.1');
+    const { texto, r } = await resposta;
+    assert.equal(texto, 'TERMOPOLIV 8080');
+    assert.equal(r.address, '127.0.0.1', 'o ESP32 tira o IP do servidor do remetente');
+  } finally {
+    cliente.close();
+    servidor.close();
+  }
+});

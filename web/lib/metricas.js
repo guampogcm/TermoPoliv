@@ -74,7 +74,7 @@ function listarPontos(cadastro, leituras) {
       });
     }
     const ponto = pontos.get(id);
-    if (lat !== undefined) { ponto.lat = lat; ponto.lon = lon; } // sensor móvel com GPS
+    if (lat !== undefined) { ponto.lat = lat; ponto.lon = lon; } // posição do GPS do ESP32 vale sobre a do cadastro
   }
   return [...pontos.values()];
 }

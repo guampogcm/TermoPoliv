@@ -19,7 +19,9 @@ Depois abra <http://localhost:8080>. Para usar outra porta: `PORT=8081 npm start
 
 ### Enviando dados do ESP32
 
-O ESP32 faz um `POST` para `http://<ip-do-computador>:8080/api/leituras`, na mesma rede do computador:
+No [`sla.c`](sla.c), preencha só `WIFI_NOME` e `WIFI_SENHA` com a mesma rede do computador (hotspot em 2,4 GHz). O ESP32 acha o servidor sozinho: manda `TERMOPOLIV?` em broadcast UDP na porta 8099, e o `npm start` responde com a porta HTTP. Se a rede bloquear broadcast, preencha `URL_SERVIDOR` com o IP do computador.
+
+O ESP32 faz um `POST` para `http://<ip-do-computador>:8080/api/leituras`:
 
 ```json
 { "sensor_id": "esp32-01", "temperatura": 27.4, "umidade": 61.2 }
@@ -30,7 +32,7 @@ O ESP32 faz um `POST` para `http://<ip-do-computador>:8080/api/leituras`, na mes
 | `sensor_id` | texto | sim | Até 40 letras, números, `.`, `-` ou `_` |
 | `temperatura` | número | sim | Em °C, de -40 a 80 |
 | `umidade` | número | sim | Em %, de 0 a 100 |
-| `lat`, `lon` | número | não | Para sensor móvel com GPS. Envie os dois juntos |
+| `lat`, `lon` | número | não | Posição do GPS do ponto. Envie os dois juntos. Sem eles, vale a de `config/pontos.json` |
 | `timestamp` | número | não | Unix, em segundos. Sem ele, ou com relógio zerado, vale a hora do servidor |
 
 Respostas: `201` gravou, `422` leitura inválida (uma falha do DHT22 chega como `null`), `400` JSON malformado, `401` chave incorreta.

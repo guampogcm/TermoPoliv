@@ -123,8 +123,8 @@ function renderMapa() {
   const aviso = $('mapa-aviso');
   aviso.hidden = semCoordenadas === 0;
   aviso.textContent = semCoordenadas === 1
-    ? 'Um sensor está sem coordenadas. Preencha lat e lon em config/pontos.json.'
-    : `${semCoordenadas} sensores estão sem coordenadas. Preencha lat e lon em config/pontos.json.`;
+    ? 'Um sensor está sem coordenadas. Aguarde o GPS encontrar satélites ou preencha lat e lon em config/pontos.json.'
+    : `${semCoordenadas} sensores estão sem coordenadas. Aguarde o GPS encontrar satélites ou preencha lat e lon em config/pontos.json.`;
 }
 
 function renderSeletor() {
